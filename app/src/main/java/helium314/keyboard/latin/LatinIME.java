@@ -1487,6 +1487,13 @@ public class LatinIME extends InputMethodService implements
                 || currentSettingsValues.mInputAttributes.mApplicationSpecifiedCompletionOn
                 // We should clear the contextual strip if there is no suggestion from dictionaries.
                 || noSuggestionsFromDictionaries) {
+            // Odin KB: with a split keyboard, show suggestions in the center gap and the toolbar in the strip
+            if (mKeyboardSwitcher.getWrapperView() instanceof KeyboardWrapperView wrapper
+                    && wrapper.setSplitSuggestions(suggestedWords, (info) -> { pickSuggestionManually(info); return kotlin.Unit.INSTANCE; })) {
+                mSuggestionStripView.setSuggestions(SuggestedWords.getEmptyInstance(), mRichImm.getCurrentSubtype().isRtlSubtype());
+                mSuggestionStripView.setToolbarVisibility(true);
+                return;
+            }
             mSuggestionStripView.setSuggestions(suggestedWords,
                     mRichImm.getCurrentSubtype().isRtlSubtype());
             // Auto hide the toolbar if dictionary suggestions are available

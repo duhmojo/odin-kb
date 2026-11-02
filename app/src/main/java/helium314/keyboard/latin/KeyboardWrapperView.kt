@@ -5,12 +5,19 @@ package helium314.keyboard.latin
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Rect
+import android.graphics.Typeface
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.TextView
+import helium314.keyboard.event.HapticEvent
+import helium314.keyboard.latin.SuggestedWords.SuggestedWordInfo
 import helium314.keyboard.keyboard.KeyboardActionListener
 import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.keyboard.internal.KeyboardIconsSet
@@ -129,10 +136,85 @@ class KeyboardWrapperView @JvmOverloads constructor(
         }
     }
 
+    // Odin KB: suggestions shown in the empty center of the split keyboard
+    private val splitSuggestions: LinearLayout by lazy {
+        LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            visibility = GONE
+            this@KeyboardWrapperView.addView(this, LayoutParams(0, 0))
+        }
+    }
+
+    /** Shows up to 3 [words] in the split gap, returns false if there is no gap to show them in. */
+    fun setSplitSuggestions(words: SuggestedWords, pick: (SuggestedWordInfo) -> Unit): Boolean {
+        if (findSplitGap() == null) {
+            splitSuggestions.visibility = GONE
+            return false
+        }
+        splitSuggestions.removeAllViews()
+        val colors = Settings.getValues().mColors
+        val count = if (words.isPunctuationSuggestions) 0 else minOf(words.size(), 3)
+        for (i in 0 until count) {
+            val info = words.getInfo(i)
+            val isAutoCorrect = words.mWillAutoCorrect && i == SuggestedWords.INDEX_OF_AUTO_CORRECTION
+            splitSuggestions.addView(TextView(context).apply {
+                text = info.mWord
+                textSize = 20f
+                gravity = Gravity.CENTER
+                maxLines = 1
+                ellipsize = TextUtils.TruncateAt.END
+                setTypeface(typeface, if (isAutoCorrect) Typeface.BOLD else Typeface.NORMAL)
+                setTextColor(colors.get(if (isAutoCorrect) ColorType.SUGGESTION_AUTO_CORRECT else ColorType.KEY_TEXT))
+                setOnClickListener {
+                    AudioAndHapticFeedbackManager.getInstance().performHapticAndAudioFeedback(KeyCode.NOT_SPECIFIED, this, HapticEvent.KEY_PRESS)
+                    pick(info)
+                }
+            }, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f))
+        }
+        splitSuggestions.visibility = if (count > 0) VISIBLE else GONE
+        requestLayout()
+        return true
+    }
+
+    fun clearSplitSuggestions() {
+        splitSuggestions.removeAllViews()
+        splitSuggestions.visibility = GONE
+    }
+
+    /** Area of the split keyboard's center gap in this view, or null if the keyboard is not split. */
+    private fun findSplitGap(): Rect? {
+        val keyboardView = KeyboardSwitcher.getInstance().mainKeyboardView ?: return null
+        if (keyboardView.visibility != VISIBLE) return null
+        val spacers = keyboardView.keyboard?.sortedKeys?.filter { it.isSpacer && it.width > 0 } ?: return null
+        if (spacers.isEmpty()) return null
+        return Rect(
+            keyboardView.left + spacers.maxOf { it.x },
+            keyboardView.top + spacers.minOf { it.y },
+            keyboardView.left + spacers.minOf { it.x + it.width },
+            keyboardView.top + spacers.maxOf { it.y + it.height }
+        )
+    }
+
+    private fun layoutSplitSuggestions() {
+        if (splitSuggestions.visibility != VISIBLE) return
+        val gap = findSplitGap()
+        if (gap == null) {
+            splitSuggestions.visibility = GONE
+            return
+        }
+        splitSuggestions.measure(
+            MeasureSpec.makeMeasureSpec(gap.width(), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(gap.height(), MeasureSpec.EXACTLY)
+        )
+        splitSuggestions.layout(gap.left, gap.top, gap.right, gap.bottom)
+    }
+
     @SuppressLint("RtlHardcoded")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         if (!oneHandedModeEnabled) {
             super.onLayout(changed, left, top, right, bottom)
+            layoutSplitSuggestions()
             return
         }
 
@@ -162,5 +244,6 @@ class KeyboardWrapperView @JvmOverloads constructor(
         stopOneHandedModeBtn.setLayout((keyboardView.measuredHeight * 0.2f).toInt())
         switchOneHandedModeBtn.setLayout((keyboardView.measuredHeight * 0.5f).toInt())
         resizeOneHandedModeBtn.setLayout((keyboardView.measuredHeight * 0.8f).toInt())
+        layoutSplitSuggestions()
     }
 }
