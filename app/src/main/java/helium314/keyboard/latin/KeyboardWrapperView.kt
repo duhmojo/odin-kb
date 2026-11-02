@@ -154,8 +154,11 @@ class KeyboardWrapperView @JvmOverloads constructor(
         }
         splitSuggestions.removeAllViews()
         val colors = Settings.getValues().mColors
-        val count = if (words.isPunctuationSuggestions) 0 else minOf(words.size(), 3)
-        for (i in 0 until count) {
+        // the typed word can appear twice, show each word once
+        val indices = if (words.isPunctuationSuggestions) emptyList()
+            else (0 until words.size()).distinctBy { words.getWord(it) }.take(3)
+        val count = indices.size
+        for (i in indices) {
             val info = words.getInfo(i)
             val isAutoCorrect = words.mWillAutoCorrect && i == SuggestedWords.INDEX_OF_AUTO_CORRECTION
             splitSuggestions.addView(TextView(context).apply {
