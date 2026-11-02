@@ -140,7 +140,25 @@ class GamepadKeyNavigator(private val switcher: KeyboardSwitcher, private val li
         listener.onReleaseKey(code, false)
     }
 
+    private fun clearHighlight(view: MainKeyboardView) {
+        val old = focused ?: return
+        old.onReleased()
+        view.invalidateKey(old)
+        focused = null
+    }
+
+    init {
+        instance = this
+    }
+
     companion object {
+        private var instance: GamepadKeyNavigator? = null
+
+        @JvmStatic
+        fun onTouch(view: MainKeyboardView) {
+            instance?.clearHighlight(view)
+        }
+
         private const val STICK_THRESHOLD = 0.5f
         private val HANDLED_KEYS = setOf(
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,

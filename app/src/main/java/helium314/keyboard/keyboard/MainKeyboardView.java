@@ -584,6 +584,9 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         if (getKeyboard() == null) {
             return false;
         }
+        // Odin KB: touching the keyboard ends controller navigation
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN)
+            helium314.keyboard.latin.GamepadKeyNavigator.onTouch(this);
         if (mNonDistinctMultitouchHelper != null) {
             if (event.getPointerCount() > 1 && mTimerHandler.isInKeyRepeat()) {
                 // Key repeating timer will be canceled if 2 or popup keys are in action.
