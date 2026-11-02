@@ -85,6 +85,10 @@ object Defaults {
             "fr${Separators.SET}${ExtraValue.KEYBOARD_LAYOUT_SET}=MAIN:qwertz${Separators.SETS}" +
             "hu${Separators.SET}${ExtraValue.KEYBOARD_LAYOUT_SET}=MAIN:qwerty"
     const val PREF_ENABLE_SPLIT_KEYBOARD = false
+    // Odin KB: split in landscape by default, so keys sit near the edges on wide handhelds
+    @JvmStatic
+    fun splitKeyboardDefault(pref: String) = pref == Settings.PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE
+            || pref == Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED_LANDSCAPE
     @JvmField
     val PREF_SPLIT_SPACER_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     @JvmField

@@ -20,6 +20,11 @@
   [
     { "label": "symbol_alpha" },
     { "$": "variation_selector",
+      "default":  { "label": "emoji" },
+      "email":    { "label": "com" },
+      "uri":      { "label": "com" }
+    },
+    { "$": "variation_selector",
       "default":  { "label": "comma", "labelFlags": 1073741824 },
       "email":    { "label": "@", "labelFlags": 1073741824, "groupId": 1, "type": "function" },
       "uri":      { "label": "/", "labelFlags": 1073741824, "groupId": 1, "type": "function" }
@@ -32,10 +37,7 @@
       "dpad": { "label": "symbol" }
     },
     { "label": "period" },
-    { "$": "variation_selector",
-      "default":  { "label": "emoji" },
-      "email":    { "label": "com" },
-      "uri":      { "label": "com" }
-    }
+    { "label": "symbol_alpha" },
+    { "label": "!icon/down|!code/-232", "type": "function" }
   ]
 ]

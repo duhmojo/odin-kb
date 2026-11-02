@@ -72,10 +72,9 @@ fun AppearanceScreen(
         SettingsWithoutKey.BACKGROUND_IMAGE_LANDSCAPE,
         R.string.settings_category_miscellaneous,
         Settings.PREF_ENABLE_SPLIT_KEYBOARD,
-        if (prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
-            || prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
-            || prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
-            || prefs.getBoolean(Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED_LANDSCAPE, Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
+        if (listOf(Settings.PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE, Settings.PREF_ENABLE_SPLIT_KEYBOARD,
+                Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED, Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED_LANDSCAPE)
+                .any { prefs.getBoolean(it, Defaults.splitKeyboardDefault(it)) }
             )
             Settings.PREF_SPLIT_SPACER_SCALE_PREFIX else null,
         if (prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, Defaults.PREF_THEME_KEY_BORDERS))
@@ -224,7 +223,7 @@ fun createAppearanceSettings(context: Context) = listOf(
         Preference(
             name = stringResource(R.string.enable_split_keyboard),
             onClick = { show = true },
-            description = prefAndName.filter { LocalContext.current.prefs().getBoolean(it.first, Defaults.PREF_ENABLE_SPLIT_KEYBOARD) }
+            description = prefAndName.filter { LocalContext.current.prefs().getBoolean(it.first, Defaults.splitKeyboardDefault(it.first)) }
                 .joinToString(", ") { it.second }.takeIf { it.isNotEmpty() }
         )
         if (show) {
@@ -236,7 +235,7 @@ fun createAppearanceSettings(context: Context) = listOf(
                 content = {
                     Column {
                         prefAndName.forEach {
-                            SwitchPreference(name = it.second, key = it.first, default = Defaults.PREF_ENABLE_SPLIT_KEYBOARD)
+                            SwitchPreference(name = it.second, key = it.first, default = Defaults.splitKeyboardDefault(it.first))
                         }
                     }
                 }

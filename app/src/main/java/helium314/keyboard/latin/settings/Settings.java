@@ -440,7 +440,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
         String pref = isLandscape
                       ? (isFolded ? PREF_ENABLE_SPLIT_KEYBOARD_FOLDED_LANDSCAPE : PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE)
                       : (isFolded ? PREF_ENABLE_SPLIT_KEYBOARD_FOLDED : PREF_ENABLE_SPLIT_KEYBOARD);
-        return prefs.getBoolean(pref, Defaults.PREF_ENABLE_SPLIT_KEYBOARD);
+        return prefs.getBoolean(pref, Defaults.splitKeyboardDefault(pref));
     }
 
     public static float readSplitSpacerScale(SharedPreferences prefs, boolean landscape, boolean folded) {
@@ -537,7 +537,9 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     }
 
     public boolean isTablet() {
-        return mContext.getResources().getInteger(R.integer.config_screen_metrics) >= 3;
+        // Odin KB: wide handhelds (e.g. AYN Odin 2 Portal) count as tablets, so they get the iPad-like layout
+        return mContext.getResources().getInteger(R.integer.config_screen_metrics) >= 3
+                || mContext.getResources().getConfiguration().smallestScreenWidthDp >= 480;
     }
 
     @SuppressLint("DiscouragedApi")
