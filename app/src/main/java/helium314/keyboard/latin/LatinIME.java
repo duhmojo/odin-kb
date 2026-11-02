@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.os.Message;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.CompletionInfo;
@@ -111,6 +112,7 @@ public class LatinIME extends InputMethodService implements
 
     final Settings mSettings;
     public final KeyboardActionListener mKeyboardActionListener;
+    private final GamepadKeyNavigator mGamepadKeyNavigator;
     private int mOriginalNavBarColor = 0;
     private int mOriginalNavBarFlags = 0;
 
@@ -489,6 +491,7 @@ public class LatinIME extends InputMethodService implements
         mKeyboardSwitcher = KeyboardSwitcher.getInstance();
         mStatsUtilsManager = StatsUtilsManager.getInstance();
         mKeyboardActionListener = new KeyboardActionListenerImpl(this, mInputLogic);
+        mGamepadKeyNavigator = new GamepadKeyNavigator(mKeyboardSwitcher, mKeyboardActionListener);
         mIsHardwareAcceleratedDrawingEnabled = this.enableHardwareAcceleration();
         Log.i(TAG, "Hardware accelerated drawing: " + mIsHardwareAcceleratedDrawingEnabled);
     }
@@ -1668,6 +1671,8 @@ public class LatinIME extends InputMethodService implements
     // Hooks for hardware keyboard
     @Override
     public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
+        if (mGamepadKeyNavigator.onKeyDown(keyCode, keyEvent))
+            return true;
         if (mKeyboardActionListener.onKeyDown(keyCode, keyEvent))
             return true;
         return super.onKeyDown(keyCode, keyEvent);
@@ -1675,9 +1680,19 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public boolean onKeyUp(final int keyCode, final KeyEvent keyEvent) {
+        if (mGamepadKeyNavigator.onKeyUp(keyCode, keyEvent))
+            return true;
         if (mKeyboardActionListener.onKeyUp(keyCode, keyEvent))
             return true;
         return super.onKeyUp(keyCode, keyEvent);
+    }
+
+    // Odin KB: left stick moves the controller highlight
+    @Override
+    public boolean onGenericMotionEvent(final MotionEvent event) {
+        if (mGamepadKeyNavigator.onGenericMotionEvent(event))
+            return true;
+        return super.onGenericMotionEvent(event);
     }
 
     // onKeyDown and onKeyUp are the main events we are interested in. There are two more events
