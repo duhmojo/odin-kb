@@ -948,13 +948,29 @@ public class LatinIME extends InputMethodService implements
         final Window window = getWindow().getWindow();
         if (window == null) return;
         hideViewsNamed(window.getDecorView(), "NavigationBarFrame");
-        // temporary: log where the space below the keyboard comes from
-        if (mInputView != null) mInputView.post(() -> {
-            for (View v = mInputView; v != null; v = v.getParent() instanceof View p ? p : null) {
-                Log.i(TAG, "odin view " + v.getClass().getName() + " top=" + v.getTop() + " h=" + v.getHeight()
-                        + " padB=" + v.getPaddingBottom() + " lp=" + v.getLayoutParams());
+        removeNavigationBarSpace();
+        if (!mNavigationBarSpaceListenerAdded) {
+            // the system re-applies the space when insets change
+            mNavigationBarSpaceListenerAdded = true;
+            window.getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(this::removeNavigationBarSpace);
+        }
+    }
+
+    private boolean mNavigationBarSpaceListenerAdded = false;
+
+    // the space for the hidden nav bar is kept as bottom margin or padding on the views around the input view
+    private void removeNavigationBarSpace() {
+        if (mInputView == null) return;
+        for (View v = mInputView.getParent() instanceof View p ? p : null;
+             v != null && !v.getClass().getSimpleName().equals("DecorView");
+             v = v.getParent() instanceof View p ? p : null) {
+            if (v.getPaddingBottom() > 0)
+                v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), 0);
+            if (v.getLayoutParams() instanceof android.view.ViewGroup.MarginLayoutParams lp && lp.bottomMargin > 0) {
+                lp.bottomMargin = 0;
+                v.setLayoutParams(lp);
             }
-        });
+        }
     }
 
     private static void hideViewsNamed(final View view, final String simpleClassName) {
