@@ -948,6 +948,13 @@ public class LatinIME extends InputMethodService implements
         final Window window = getWindow().getWindow();
         if (window == null) return;
         hideViewsNamed(window.getDecorView(), "NavigationBarFrame");
+        // temporary: log where the space below the keyboard comes from
+        if (mInputView != null) mInputView.post(() -> {
+            for (View v = mInputView; v != null; v = v.getParent() instanceof View p ? p : null) {
+                Log.i(TAG, "odin view " + v.getClass().getName() + " top=" + v.getTop() + " h=" + v.getHeight()
+                        + " padB=" + v.getPaddingBottom() + " lp=" + v.getLayoutParams());
+            }
+        });
     }
 
     private static void hideViewsNamed(final View view, final String simpleClassName) {
@@ -1155,7 +1162,12 @@ public class LatinIME extends InputMethodService implements
             return;
         }
         final int stripHeight = mKeyboardSwitcher.isShowingStripContainer() ? mKeyboardSwitcher.getStripContainer().getHeight() : 0;
-        int visibleTopY = inputHeight - visibleKeyboardView.getHeight() - stripHeight;
+        // Odin KB: the input view does not always start at the top of the IME window (e.g. Android 13 with the
+        // IME drawing the nav bar), but insets are in window coordinates
+        final int[] inputViewLocation = new int[2];
+        mInputView.getLocationInWindow(inputViewLocation);
+        final int inputViewTop = inputViewLocation[1];
+        int visibleTopY = inputViewTop + inputHeight - visibleKeyboardView.getHeight() - stripHeight;
         if (Settings.getValues().mIsFloatingKeyboard)
             visibleTopY = getResources().getDisplayMetrics().heightPixels;
 
@@ -1168,7 +1180,7 @@ public class LatinIME extends InputMethodService implements
             int touchLeft = 0;
             int touchTop = mKeyboardSwitcher.isShowingPopupKeysPanel() ? 0 : visibleTopY;
             int touchRight = visibleKeyboardView.getWidth();
-            int touchBottom = inputHeight + EXTENDED_TOUCHABLE_REGION_HEIGHT; // Extend touchable region below the keyboard.
+            int touchBottom = inputViewTop + inputHeight + EXTENDED_TOUCHABLE_REGION_HEIGHT; // Extend touchable region below the keyboard.
             if (mSettings.getCurrent().mIsFloatingKeyboard) {
                 var xy = FloatingKeyboardUtils.readPosition(this, Integer.MAX_VALUE, Integer.MAX_VALUE);
                 touchLeft = xy.component1();
