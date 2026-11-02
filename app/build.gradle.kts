@@ -17,14 +17,24 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // release key comes from the environment (GitHub secrets in the release workflow), never from the repo
+        System.getenv("ODIN_KEYSTORE_FILE")?.let { keystore ->
+            create("release") {
+                storeFile = file(keystore)
+                storePassword = System.getenv("ODIN_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ODIN_KEY_ALIAS")
+                keyPassword = System.getenv("ODIN_KEY_PASSWORD")
+            }
+        }
     }
 
     defaultConfig {
         applicationId = "odin.kb"
         minSdk = 21
         targetSdk = 37
-        versionCode = 4300
-        versionName = "4.3-beta1"
+        // Odin KB has its own versions; the release workflow sets them from the git tag (v1.2.3)
+        versionCode = System.getenv("ODIN_VERSION_CODE")?.toInt() ?: 1
+        versionName = System.getenv("ODIN_VERSION_NAME") ?: "1.0.0-dev"
         ndk {
             abiFilters.clear()
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
@@ -38,6 +48,7 @@ android {
             isShrinkResources = false
             isDebuggable = false
             isJniDebuggable = false
+            signingConfigs.findByName("release")?.let { signingConfig = it }
         }
         create("nouserlib") { // same as release, but does not allow the user to provide a library
             isMinifyEnabled = true

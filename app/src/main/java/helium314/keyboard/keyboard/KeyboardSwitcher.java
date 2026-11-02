@@ -234,7 +234,9 @@ public final class KeyboardSwitcher {
             @NonNull final SettingsValues settingsValues,
             @NonNull final KeyboardSwitchState toggleState) {
         final int visibility = isImeSuppressedByHardwareKeyboard(settingsValues, toggleState) ? View.GONE : View.VISIBLE;
-        final int stripVisibility = mLatinIME.hasSuggestionStripView()? View.VISIBLE : View.GONE;
+        // Odin KB: a split keyboard shows suggestions in its center gap, so the strip is not needed
+        final boolean stripReplacedBySplit = settingsValues.mIsSplitKeyboardEnabled && !settingsValues.mHasHardwareKeyboard;
+        final int stripVisibility = mLatinIME.hasSuggestionStripView() && !stripReplacedBySplit ? View.VISIBLE : View.GONE;
         mStripContainer.setVisibility(stripVisibility);
         PointerTracker.switchTo(mKeyboardView);
         mKeyboardView.setVisibility(visibility);

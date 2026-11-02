@@ -163,7 +163,7 @@ class KeyboardWrapperView @JvmOverloads constructor(
             val isAutoCorrect = words.mWillAutoCorrect && i == SuggestedWords.INDEX_OF_AUTO_CORRECTION
             splitSuggestions.addView(TextView(context).apply {
                 text = info.mWord
-                textSize = 20f
+                textSize = 22f
                 gravity = Gravity.CENTER
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END

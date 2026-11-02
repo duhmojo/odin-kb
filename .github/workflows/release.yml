@@ -1,0 +1,56 @@
+name: Release
+
+# Push a tag like v1.2.3 to build a signed APK and publish it as a GitHub release.
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+          echo "ODIN_VERSION_NAME=$VERSION" >> "$GITHUB_ENV"
+          echo "ODIN_VERSION_CODE=$(( MAJOR * 10000 + MINOR * 100 + ${PATCH:-0} ))" >> "$GITHUB_ENV"
+
+      - name: Release signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ODIN_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "ODIN_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          ODIN_KEYSTORE_PASSWORD: ${{ secrets.ODIN_KEYSTORE_PASSWORD }}
+          ODIN_KEY_ALIAS: ${{ secrets.ODIN_KEY_ALIAS }}
+          ODIN_KEY_PASSWORD: ${{ secrets.ODIN_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/release/*-release.apk "OdinKB-$ODIN_VERSION_NAME.apk"
+          gh release create "$GITHUB_REF_NAME" "OdinKB-$ODIN_VERSION_NAME.apk" \
+            --title "Odin KB $ODIN_VERSION_NAME" --generate-notes
