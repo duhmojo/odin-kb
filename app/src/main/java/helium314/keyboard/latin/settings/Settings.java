@@ -539,7 +539,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public boolean isTablet() {
         // Odin KB: wide handhelds (e.g. AYN Odin 2 Portal) count as tablets, so they get the iPad-like layout
         return mContext.getResources().getInteger(R.integer.config_screen_metrics) >= 3
-                || mContext.getResources().getConfiguration().smallestScreenWidthDp >= 480;
+                || mContext.getResources().getConfiguration().smallestScreenWidthDp >= 460;
     }
 
     @SuppressLint("DiscouragedApi")

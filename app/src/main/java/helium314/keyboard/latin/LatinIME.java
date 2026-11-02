@@ -103,6 +103,7 @@ public class LatinIME extends InputMethodService implements
     private static final boolean TRACE = false;
 
     private static final int EXTENDED_TOUCHABLE_REGION_HEIGHT = 100;
+    private static final boolean ODIN_NO_FULLSCREEN = true;
     private static final int PERIOD_FOR_AUDIO_AND_HAPTIC_FEEDBACK_IN_KEY_REPEAT = 2;
     private static final int PENDING_IMS_CALLBACK_DURATION_MILLIS = 800;
     static final long DELAY_WAIT_FOR_DICTIONARY_LOAD_MILLIS = TimeUnit.SECONDS.toMillis(2);
@@ -935,6 +936,34 @@ public class LatinIME extends InputMethodService implements
                 FloatingKeyboardUtils.setFloating(mInputView);
             setNavigationBarColor();
             workaroundForHuaweiStatusBarIssue();
+            hideImeNavigationBar();
+        }
+    }
+
+    // Odin KB: on Android 13+ with gesture navigation the system draws a row with "hide keyboard" and
+    // "switch keyboard" buttons inside our window, below the keyboard. Hide it, so the keyboard reaches the
+    // bottom of the screen; our bottom row has its own hide key.
+    private void hideImeNavigationBar() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
+        final Window window = getWindow().getWindow();
+        if (window == null) return;
+        hideViewsNamed(window.getDecorView(), "NavigationBarFrame");
+    }
+
+    private static void hideViewsNamed(final View view, final String simpleClassName) {
+        if (view.getClass().getSimpleName().equals(simpleClassName)) {
+            if (view.getVisibility() != View.GONE) {
+                view.setVisibility(View.GONE);
+                // the system may show it again, e.g. when the nav bar appearance changes
+                view.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+                    if (view.getVisibility() != View.GONE) view.setVisibility(View.GONE);
+                });
+            }
+            return;
+        }
+        if (view instanceof android.view.ViewGroup group) {
+            for (int i = 0; i < group.getChildCount(); i++)
+                hideViewsNamed(group.getChildAt(i), simpleClassName);
         }
     }
 
@@ -1192,7 +1221,9 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public boolean onEvaluateFullscreenMode() {
-        if (isImeSuppressedByHardwareKeyboard() || mSettings.getCurrent().mIsFloatingKeyboard) {
+        // Odin KB: never use the landscape fullscreen (extract) mode. Short wide screens trigger it, and with
+        // Android 13+ drawing its nav bar inside the IME window the touchable region then leaves out the lower rows.
+        if (ODIN_NO_FULLSCREEN || isImeSuppressedByHardwareKeyboard() || mSettings.getCurrent().mIsFloatingKeyboard) {
             // If there is a hardware keyboard or we're floating, disable full screen mode.
             return false;
         }

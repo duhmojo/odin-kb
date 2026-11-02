@@ -9,6 +9,16 @@ plugins {
 android {
     compileSdk = 37
 
+    // Odin KB: fixed debug key, so every CI build installs over the previous one without uninstalling
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("odin-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         applicationId = "odin.kb"
         minSdk = 21
