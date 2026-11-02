@@ -248,7 +248,7 @@ fun createAppearanceSettings(context: Context) = listOf(
             baseKey = setting.key,
             dimensions = listOf(stringResource(R.string.landscape), stringResource(R.string.folded)),
             defaults = Defaults.PREF_SPLIT_SPACER_SCALE,
-            range = 0.5f..2f,
+            range = 0.5f..3f,
             description = { "${(100 * it).toInt()}%" }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },

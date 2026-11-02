@@ -90,7 +90,8 @@ object Defaults {
     fun splitKeyboardDefault(pref: String) = pref == Settings.PREF_ENABLE_SPLIT_KEYBOARD_LANDSCAPE
             || pref == Settings.PREF_ENABLE_SPLIT_KEYBOARD_FOLDED_LANDSCAPE
     @JvmField
-    val PREF_SPLIT_SPACER_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
+    // Odin KB: wider split in landscape (normal and folded), so keys sit closer to the edges
+    val PREF_SPLIT_SPACER_SCALE = arrayOf(DEFAULT_SIZE_SCALE, 1.75f, DEFAULT_SIZE_SCALE, 1.75f)
     @JvmField
     val PREF_KEYBOARD_HEIGHT_SCALE = Array(4) { DEFAULT_SIZE_SCALE }
     @JvmField

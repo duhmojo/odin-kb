@@ -152,19 +152,10 @@ open class KeyboardBuilder<KP : KeyboardParams>(protected val mContext: Context,
                 val widthAfterSpace = row.subList(insertIndex, row.size).sumOf { it.mWidth }
                 val spaceLeftWidth = (maxWidthBeforeSpacer - widthBeforeSpace).coerceAtLeast(mParams.mDefaultKeyWidth)
                 val spaceRightWidth = (maxWidthAfterSpacer - widthAfterSpace).coerceAtLeast(mParams.mDefaultKeyWidth)
-                val spacerWidth = spaceLeft.mWidth + spacerRelativeWidth - spaceLeftWidth - spaceRightWidth
-                if (spacerWidth > 0.05f) {
-                    // only insert if the spacer has a reasonable width
-                    val spaceRight = KeyParams(spaceLeft)
-                    spaceLeft.mWidth = spaceLeftWidth
-                    spaceRight.mWidth = spaceRightWidth
-                    spacer.mWidth = spacerWidth
-                    row.add(insertIndex, spaceRight)
-                    row.add(insertIndex, spacer)
-                } else {
-                    // otherwise increase space width, so other keys are resized properly
-                    spaceLeft.mWidth += spacerWidth
-                }
+                // Odin KB: keep a single space key spanning the gap, it's easier to hit than two halves
+                // (same total width as left space + spacer + right space would have)
+                spaceLeft.mWidth = spaceLeftWidth + spaceRightWidth +
+                        (spaceLeft.mWidth + spacerRelativeWidth - spaceLeftWidth - spaceRightWidth).coerceAtLeast(0f)
             } else {
                 val widthBeforeSpacer = row.subList(0, insertIndex).sumOf { it.mWidth }
                 val widthAfterSpacer = row.subList(insertIndex, row.size).sumOf { it.mWidth }
