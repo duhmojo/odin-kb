@@ -1,10 +1,16 @@
 # Odin KB
 
-A keyboard for wide-screen Android handhelds like the AYN Odin 2 Portal, built on [HeliBoard](https://github.com/Helium314/HeliBoard). It's offline, open source, and has no internet permission.
+A keyboard for Android gaming handhelds and other wide-screen devices, like the AYN Odin 2 Portal. It's offline, open source, and has no internet permission.
 
-Phone keyboards on a 16:9 handheld put every key in the middle of the screen, out of reach of your thumbs. Odin KB splits the keyboard so the keys sit under your thumbs, and lays it out more like an iPad.
+> **Odin KB is a fork of [HeliBoard](https://github.com/Helium314/HeliBoard)** by Helium314, which is itself based on OpenBoard and the AOSP keyboard. All of HeliBoard's features are still here. This fork adds changes for handhelds held with two hands in landscape. It is not affiliated with HeliBoard or AYN, so please report Odin KB problems [here](https://github.com/duhmojo/odin-kb/issues), not to HeliBoard.
 
-## What's different from HeliBoard
+![Odin KB on an Odin 2 Portal: split keyboard with suggestions in the middle](docs/screenshot.png)
+
+*Odin KB on an Odin 2 Portal: keys at the screen edges, suggestions between your thumbs, and the space bar on the real bottom row.*
+
+Phone keyboards on a 16:9 handheld put every key in the middle of the screen, out of reach of your thumbs. Android's gesture navigation also adds an empty row with a "hide keyboard" arrow below the keyboard, so the space bar isn't at the bottom. Odin KB splits the keyboard so the keys sit under your thumbs, lays it out more like an iPad, and gives the bottom row back to the keyboard.
+
+## Features for handhelds
 
 - **Split keyboard by default in landscape.** The two halves sit at the screen edges, with one wide space bar spanning the gap.
 - **Suggestions between your thumbs.** Autocomplete words show in the empty middle of the split, so the strip above the keyboard is hidden and the keyboard takes less height.
