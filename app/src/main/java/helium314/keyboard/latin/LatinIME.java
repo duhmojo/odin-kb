@@ -948,6 +948,9 @@ public class LatinIME extends InputMethodService implements
         final Window window = getWindow().getWindow();
         if (window == null) return;
         hideViewsNamed(window.getDecorView(), "NavigationBarFrame");
+        // the window still draws a nav bar background on top of the bottom of the keyboard, make it transparent
+        window.setNavigationBarColor(Color.TRANSPARENT);
+        window.setNavigationBarContrastEnforced(false);
         removeNavigationBarSpace();
         if (!mNavigationBarSpaceListenerAdded) {
             // the system re-applies the space when insets change
